@@ -23,22 +23,7 @@ The other algorithm families are less suitable for the following reasons:
 
 ---
 
-## Part 2: Cloud-IoT Deployment Blueprint
+## Part 2: Cloud, Security & IoT Deployment Blueprint
+The complete architectural design, network boundary planning, and IoT mapping can be found in the documentation folder:
 
-### 1. Architectural Overview
-This architecture deploys the Python-based scheduling-and-safety engine (built in Part 1) as a secure, cloud-hosted "Cloud Platform Layer." The three city zones (Zone-A, Zone-B, Zone-C) act as IoT edge networks. Zone controllers submit sensor-processing jobs (e.g., traffic-camera triggers) to this centralized layer via a secured API Gateway.
-
-### 2. VPC Design & Network Security
-The deployment utilizes a standard Virtual Private Cloud (VPC) isolated from the public internet. 
-*   **Public Subnets:** House the API Gateways and Load Balancers. These act as the ingress points for the Zone-A, B, and C controllers.
-*   **Private Subnets:** House the actual compute layer where our `jobs.py` queueing logic and `task567.py` Deadlock-Safety Engine run. The compute instances have no public IP addresses. 
-*   **Security Groups:** Ingress to the private compute subnets is strictly limited to traffic originating from the API Gateway's security group.
-
-### 3. Compute Layer Integration
-The engine built in Part 1 is packaged into a containerized microservice. 
-*   **Job Ingestion:** As IoT payloads arrive from the zones, they are parsed and formatted into the dictionary structure defined in `jobs.py` (containing `job_id`, `zone`, `burst_time`, etc.).
-*   **Execution:** The container utilizes the **SRTF algorithm** (selected in Task 8) to prioritize processing. 
-*   **Safety & Synchronization:** As jobs execute, they consume shared resources (e.g., the Zone-B compute-credit counter). The exact Peterson's Algorithm and Banker's Algorithm logic from `task567.py` runs at the hypervisor level to ensure these concurrent updates remain arithmetically correct and absolutely deadlock-free across the shared IoT resource pools.
-
-### 4. Reliability & Availability
-While the algorithms in Part 1 handle concurrent processing safely, the cloud architecture ensures high availability. If a compute node fails (e.g., simulating a fatal page fault as seen in the address translator of Task 7), an Auto-Scaling Group immediately provisions a replacement node within the private subnet, pulling the current resource allocations (`ALLOCATION` and `AVAILABLE` matrices) from a highly available distributed cache like Redis to resume safe execution.
+[View Architecture Blueprint (docs/architecture_blueprint.md)](docs/architecture_blueprint.md)
